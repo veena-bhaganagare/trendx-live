@@ -1,1 +1,28 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta http-equiv="refresh" content="0;url=https://veena-bhaganagare.github.io/trendx-live/app.html"/><title>TrendX</title></head><body><p>Loading TrendX… <a href="app.html">Open app</a></p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendX — Loading</title>
+</head>
+<body>
+  <p style="font-family:Inter,system-ui,sans-serif;text-align:center;margin-top:40vh;color:#6b7280">Loading TrendX…</p>
+  <script>
+  (async function() {
+    const n = 6;
+    let b64 = '';
+    for (let i = 0; i < n; i++) {
+      const r = await fetch('chunk' + i + '.txt');
+      b64 += await r.text();
+    }
+    const html = decodeURIComponent(escape(atob(b64.trim())));
+    document.open();
+    document.write(html);
+    document.close();
+  })().catch(e => {
+    document.body.innerHTML = '<p style="color:red;text-align:center;margin-top:40vh">Failed to load. Refresh or check console.</p>';
+    console.error(e);
+  });
+  </script>
+</body>
+</html>
