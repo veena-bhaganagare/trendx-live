@@ -1,28 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrendX — Loading</title>
+  <meta http-equiv="refresh" content="0;url=./index%20(1).html" />
+  <title>TrendX</title>
+  <script>location.replace("./index%20(1).html");</script>
 </head>
 <body>
-  <p style="font-family:Inter,system-ui,sans-serif;text-align:center;margin-top:40vh;color:#6b7280">Loading TrendX…</p>
-  <script>
-  (async function() {
-    const n = 6;
-    let b64 = '';
-    for (let i = 0; i < n; i++) {
-      const r = await fetch('chunk' + i + '.txt');
-      b64 += await r.text();
-    }
-    const html = decodeURIComponent(escape(atob(b64.trim())));
-    document.open();
-    document.write(html);
-    document.close();
-  })().catch(e => {
-    document.body.innerHTML = '<p style="color:red;text-align:center;margin-top:40vh">Failed to load. Refresh or check console.</p>';
-    console.error(e);
-  });
-  </script>
+  <p style="font-family:system-ui;text-align:center;margin-top:40vh"><a href="./index%20(1).html">Open TrendX</a></p>
 </body>
 </html>
