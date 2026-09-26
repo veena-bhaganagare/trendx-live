@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendX — AI-Powered Social Media Intelligence | Paradoxx · SIH26152</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --border-2: #d1d5db;
+      --sidebar: #ffffff;
+      --accent: #111827;
+      --link: #1d4ed8;
+      --pos: #16a34a;
+      --neg: #dc2626;
+      --mix: #d97706;
+      --neu: #6b7280;
+      --blue: #2563eb;
+      --shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+      --radius: 10px;
+      --sidebar-w: 232px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: Inter, Arial, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    button, input, select { font-family: inherit; }
+    a { color: var(--link); }
+
+    /* ========== ONBOARDING / LOGIN SCREENS ========== */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+    }
+    .screen.active { display: flex; }
+
+    /* Login */
+    #screen-login {
+      background: #fff;
+      flex-direction: row;
+    }
+    .login-left {
+      flex: 1.1;
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(160deg, #f8fafc 0%, #fff 60%);
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .login-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #111827; color: #fff;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 15px;
+    }
+    .login-brand span { font-weight: 800; font-size: 18px; letter-spacing: -.02em; }
+    .login-left h1 {
+      font-size: 42px; font-weight: 800; letter-spacing: -.04em;
+      line-height: 1.15; margin-bottom: 16px; color: #111827;
+    }
+    .login-left h1 .accent { color: #2563eb; }
+    .login-left .lead {
+      font-size: 16px; color: #4b5563; max-width: 420px; margin-bottom: 28px; line-height: 1.6;
+    }
+    .login-left ul {
+      list-style: none; color: #374151; font-size: 14.5px;
+    }
+    .login-left ul li {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .login-left ul li::before {
+      content: "→"; color: #2563eb; font-weight: 700;
+    }
+    .login-right {
+      flex: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      background: #f9fafb;
+      border-left: 1px solid var(--border);
+    }
+    .login-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.06);
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .login-card h2 {
+      font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 4px;
+    }
+    .login-card .sub {
+      color: var(--muted); font-size: 13.5px; margin-bottom: 22px;
+    }
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 11px 16px;
+      border: 1px solid var(--border-2);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      color: #374151;
+    }
+    .btn-google:hover { background: #f9fafb; }
+    .btn-google svg { width: 18px; height: 18px; }
+    .or-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 18px 0; color: var(--muted); font-size: 12.5px;
+    }
+    .or-divider::before, .or-divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--border);
+    }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block; font-size: 12.5px; font-weight: 600; color: #374151; margin-bottom: 5px;
+    }
+    .field input {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border-2); border-radius: 8px;
+      font-size: 14px; outline: none; background: #fff;
+    }
+    .field input:focus { border-color: #9ca3af; }
+    .forgot {
+      display: block; text-align: right; font-size: 12.5px;
+      color: var(--link); margin: -6px 0 16px; text-decoration: none;
+    }
+    .btn-primary {
+      width: 100%; padding: 12px 16px;
+      background: #2563eb; color: #fff; border: 0;
+      border-radius: 8px; font-size: 14.5px; font-weight: 650;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .login-note {
+      margin-top: 14px; font-size: 11.5px; color: var(--muted); text-align: center;
+    }
+    .signup-link {
+      margin-top: 18px; text-align: center; font-size: 13px; color: var(--muted);
+    }
+    .signup-link a { font-weight: 600; }
+
+    /* Interests */
+    #screen-interests {
+      background: #fff;
+      flex-direction: column;
+    }
+    .int-header {
+      padding: 20px 32px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .int-header .brand-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .int-header .step {
+      font-size: 12.5px; color: var(--muted); font-weight: 500;
+    }
+    .int-body {
+      flex: 1; padding: 36px 40px 100px; max-width: 960px; margin: 0 auto; width: 100%;
+    }
+    .int-body h1 {
+      font-size: 28px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 8px;
+    }
+    .int-body .lead {
+      color: var(--muted); font-size: 15px; margin-bottom: 28px; max-width: 560px;
+    }
+    .int-tabs {
+      display: flex; gap: 6px; margin-bottom: 22px; flex-wrap: wrap;
+    }
+    .int-tab {
+      padding: 7px 14px; border-radius: 999px;
+      border: 1px solid var(--border); background: #fff;
+      font-size: 13px; font-weight: 550; cursor: pointer; color: #374151;
+    }
+    .int-tab.active {
+      background: #111827; color: #fff; border-color: #111827;
+    }
+    .int-count {
+      font-size: 13px; color: var(--muted); margin-bottom: 14px;
+    }
+    .int-count strong { color: #111827; }
+    .int-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .int-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13.5px; font-weight: 550;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .int-chip:hover { border-color: #9ca3af; }
+    .int-chip.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+    .int-chip .tag-trending {
+      font-size: 10px; font-weight: 700; letter-spacing: .02em;
+      background: #fef3c7; color: #b45309;
+      padding: 2px 6px; border-radius: 4px; margin-left: auto;
+    }
+    .int-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 50;
+    }
+    .int-footer .back-link {
+      background: none; border: 0; color: var(--muted);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+    }
+    .int-footer .back-link:hover { color: #111827; }
+    .btn-build {
+      padding: 12px 24px;
+      background: #2563eb; color: #fff; border: 0;
+      border-radius: 8px; font-size: 14.5px; font-weight: 650;
+      cursor: pointer;
+    }
+    .btn-build:hover { background: #1d4ed8; }
+    .btn-build:disabled {
+      background: #93c5fd; cursor: not-allowed;
+    }
+
+    /* Building */
+    #screen-building {
+      background: #fff;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+    .build-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: #eff6ff; color: #2563eb;
+      display: grid; place-items: center;
+      font-size: 28px; margin-bottom: 24px;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: .85; }
+    }
+    .build-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    #screen-building h1 {
+      font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 8px;
+    }
+    #screen-building .sub {
+      color: var(--muted); font-size: 14.5px; margin-bottom: 28px; max-width: 360px;
+    }
+    .progress-track {
+      width: 100%; max-width: 360px; height: 6px;
+      background: #e5e7eb; border-radius: 99px; overflow: hidden; margin-bottom: 18px;
+    }
+    .progress-fill {
+      height: 100%; background: #2563eb; border-radius: 99px;
+      width: 0%; transition: width .4s ease;
+    }
+    .build-steps {
+      display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
+      font-size: 13px; color: var(--muted); margin-bottom: 28px;
+    }
+    .build-steps .done { color: #16a34a; font-weight: 600; }
+    .build-steps .done::before { content: "✓ "; }
+    .btn-open-feed {
+      padding: 12px 28px;
+      background: #2563eb; color: #fff; border: 0;
+      border-radius: 8px; font-size: 14.5px; font-weight: 650;
+      cursor: pointer; display: none;
+    }
+    .btn-open-feed:hover { background: #1d4ed8; }
+    .btn-open-feed.show { display: inline-block; }
+
+    /* ========== DASHBOARD (from provided HTML) ========== */
+    .app { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      flex-shrink: 0;
+      z-index: 40;
+    }
+    .brand {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-mark { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #111827; color: #fff;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 14px;
+    }
+    .brand h1 { font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+    .brand p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    .nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-label {
+      font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+      color: #9ca3af; font-weight: 600; padding: 8px 10px 6px;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; text-align: left;
+      border: 0; background: transparent;
+      padding: 9px 12px; border-radius: 8px;
+      color: #374151; font-size: 13.5px; font-weight: 500;
+      cursor: pointer;
+    }
+    .nav-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+    .nav-btn:hover { background: #f3f4f6; }
+    .nav-btn.active { background: #111827; color: #fff; }
+    .nav-spacer { flex: 1; }
+    .nav-bottom { padding: 10px; border-top: 1px solid var(--border); }
+
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .topbar h2 { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+    .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .hamburger {
+      display: none; border: 1px solid var(--border); background: #fff;
+      width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+    }
+    .content { padding: 22px 28px 40px; max-width: 1280px; width: 100%; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-h {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-weight: 650; font-size: 13.5px;
+    }
+    .card-b { padding: 16px; }
+    .section-title {
+      font-size: 13px; font-weight: 700; letter-spacing: .01em;
+      margin: 0 0 10px; color: #111827;
+    }
+    .muted { color: var(--muted); }
+    .tiny { font-size: 11.5px; color: var(--muted); }
+
+    .grid-2 { display: grid; grid-template-columns: 1.6fr .9fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .demo-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .demo-split > div { padding: 16px; }
+    .demo-split > div + div { border-left: 1px solid var(--border); }
+    .stack { display: flex; flex-direction: column; gap: 14px; }
+
+    .topic-card {
+      padding: 14px 16px; cursor: pointer;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: #fff; box-shadow: var(--shadow);
+    }
+    .topic-card:hover { border-color: #9ca3af; }
+    .topic-card .rank { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .topic-card h3 { font-size: 15.5px; margin: 2px 0 4px; }
+    .topic-card .one-line { color: #374151; font-size: 13.5px; }
+    .show-more {
+      margin-top: 8px; background: none; border: 0; color: var(--link);
+      font-weight: 600; font-size: 13px; cursor: pointer; padding: 0;
+    }
+
+    .post {
+      display: flex; gap: 12px; padding: 14px 16px;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: #fff;
+    }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 700; color: #fff; flex-shrink: 0; font-size: 13px;
+    }
+    .post-head { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .post-head .name { font-weight: 650; }
+    .post-head .handle, .post-head .time { color: var(--muted); font-size: 12.5px; }
+    .post-text { margin: 6px 0 10px; color: #1f2937; }
+    .metrics {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      color: var(--muted); font-size: 12.5px;
+    }
+    .metrics span { display: inline-flex; align-items: center; gap: 5px; }
+
+    .rising-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .rising-item:last-child { border-bottom: 0; }
+    .rising-item:hover .rt-name { text-decoration: underline; }
+    .rt-rank { font-weight: 700; color: #9ca3af; width: 22px; }
+    .rt-name { font-weight: 650; }
+    .rt-delta { color: var(--pos); font-weight: 650; font-size: 12.5px; margin-left: auto; }
+
+    .search {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border-2);
+      border-radius: 8px; background: #fff; font-size: 14px; outline: none;
+    }
+    .search:focus { border-color: #9ca3af; }
+    .trend-row {
+      display: grid; grid-template-columns: 36px 1fr auto;
+      gap: 12px; align-items: center;
+      padding: 14px 16px; background: #fff;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .trend-row:hover { border-color: #9ca3af; }
+    .trend-row .num { font-weight: 800; color: #9ca3af; font-size: 16px; }
+    .trend-row h3 { font-size: 15.5px; }
+    .trend-meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+    .delta-pill {
+      background: #ecfdf3; color: #15803d; border: 1px solid #bbf7d0;
+      font-weight: 700; font-size: 12.5px; padding: 4px 8px; border-radius: 999px;
+    }
+
+    .back-btn {
+      border: 1px solid var(--border); background: #fff; border-radius: 8px;
+      padding: 6px 10px; cursor: pointer; font-size: 13px; font-weight: 500;
+    }
+    .back-btn:hover { background: #f9fafb; }
+    .q-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .q-btn {
+      border: 1px solid var(--border-2); background: #fff; border-radius: 999px;
+      padding: 6px 12px; font-size: 12.5px; cursor: pointer; font-weight: 500;
+    }
+    .q-btn:hover, .q-btn.active { background: #111827; color: #fff; border-color: #111827; }
+    .explain-box {
+      background: #f9fafb; border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; margin-top: 12px; color: #1f2937;
+    }
+    .show-analytics {
+      background: #111827; color: #fff; border: 0; border-radius: 8px;
+      padding: 10px 16px; font-weight: 650; cursor: pointer; font-size: 13.5px;
+    }
+    .show-analytics:hover { background: #000; }
+
+    .chart-wrap { position: relative; height: 220px; }
+    .chart-wrap.tall { height: 260px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 10px; font-size: 12.5px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+    .bar-row { display: grid; grid-template-columns: 70px 1fr 42px; gap: 8px; align-items: center; margin: 7px 0; font-size: 12.5px; }
+    .bar-track { height: 8px; background: #eef0f3; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; background: #374151; border-radius: 99px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11.5px; color: var(--muted); font-weight: 600; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    td { padding: 8px 0; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: 0; }
+
+    .plat {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border);
+      background: #f9fafb; letter-spacing: .02em;
+    }
+    .plat.x { background: #111827; color: #fff; border-color: #111827; }
+    .plat.tg { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .plat.rd { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+
+    .net-wrap { background: #fafafa; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .infl-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .infl-row:last-child { border-bottom: 0; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      border: 1px solid var(--border); background: #fff; border-radius: 8px;
+      padding: 8px 10px; font-size: 12.5px;
+    }
+    .tag b { display: block; font-size: 14px; }
+
+    input[type=range] { width: 100%; accent-color: #111827; }
+    .spike-note {
+      display: inline-block; background: #fff7ed; color: #9a3412;
+      border: 1px solid #fed7aa; border-radius: 6px; padding: 3px 8px;
+      font-size: 12px; font-weight: 650;
+    }
+
+    .hidden { display: none !important; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .footer-note {
+      margin-top: 28px; color: #9ca3af; font-size: 11px; line-height: 1.45;
+    }
+
+    .kpi {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .kpi .k { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+    .kpi .v { font-size: 22px; font-weight: 800; letter-spacing: -.03em; margin-top: 2px; }
+    .kpi .d { font-size: 12px; color: var(--pos); font-weight: 600; }
+
+    .imp-post { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .imp-post:last-child { border-bottom: 0; }
+
+    .overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 30;
+    }
+
+    @media (max-width: 980px) {
+      .grid-2, .grid-split, .grid-3 { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; left: 0; top: 0; transform: translateX(-100%);
+        transition: transform .2s ease; box-shadow: 8px 0 24px rgba(0,0,0,.08);
+      }
+      .sidebar.open { transform: none; }
+      .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+      .content { padding: 16px; }
+      .topbar { padding: 12px 16px; }
+      .overlay.open { display: block; }
+      #screen-login { flex-direction: column; }
+      .login-left { padding: 32px 24px; }
+      .login-left h1 { font-size: 28px; }
+      .login-right { border-left: 0; border-top: 1px solid var(--border); padding: 28px 20px; }
+      .int-body { padding: 24px 20px 100px; }
+    }
+    @media (max-width: 720px) {
+      .demo-split { grid-template-columns: 1fr; }
+      .demo-split > div + div { border-left: 0; border-top: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== SCREEN: LOGIN ========== -->
+  <div class="screen active" id="screen-login">
+    <div class="login-left">
+      <div class="login-brand">
+        <div class="login-logo">TX</div>
+        <span>TrendX</span>
+      </div>
+      <div style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;">Welcome to TrendX</div>
+      <h1>Turn your interests<br/><span class="accent">into insights.</span></h1>
+      <p class="lead">Choose the subjects that matter to you and get a clearer, more personal view of the ideas, trends, and opportunities worth your attention.</p>
+      <ul>
+        <li>Discover what is changing</li>
+        <li>Follow ideas that move you forward</li>
+      </ul>
+    </div>
+    <div class="login-right">
+      <div class="login-card">
+        <h2 id="authTitle">Welcome back</h2>
+        <p class="sub" id="authSub">Sign in to continue to your personalized space.</p>
+        <button class="btn-google" id="btnGoogle" onclick="signInWithGoogle()">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span id="googleLabel">Continue with Google</span>
+        </button>
+        <div class="or-divider">or</div>
+        <div class="field" id="nameField" style="display:none;">
+          <label>Full name</label>
+          <input type="text" id="loginName" placeholder="Your name" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="you@gmail.com" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="Password (min 6 characters)" />
+        </div>
+        <a href="#" class="forgot" id="forgotLink" onclick="resetPassword();return false;">Forgot password?</a>
+        <p id="authError" style="display:none;color:#dc2626;font-size:13px;margin:0 0 12px;"></p>
+        <button class="btn-primary" id="btnAuth" onclick="submitAuth()">Sign in →</button>
+        <p class="login-note">Your data is kept secure · Powered by Firebase</p>
+        <p class="signup-link" id="authSwitch">New to TrendX? <a href="#" onclick="toggleAuthMode();return false;">Sign up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN: INTERESTS ========== -->
+  <div class="screen" id="screen-interests">
+    <div class="int-header">
+      <div class="brand-row">
+        <div class="login-logo" style="width:28px;height:28px;font-size:12px;">TX</div>
+        <span style="font-weight:800;font-size:15px;">TrendX</span>
+      </div>
+      <div class="step">STEP 1 OF 2 · INTERESTS &nbsp;·&nbsp; <a href="#" onclick="showScreen('login');return false;" style="color:var(--muted);text-decoration:none;">← Back to sign in</a></div>
+    </div>
+    <div class="int-body">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px;">Your personal starting point</div>
+      <h1>Choose what you want to follow.</h1>
+      <p class="lead">Select the topics you care about. TrendX will turn them into a more relevant intelligence feed.</p>
+      <div class="int-tabs">
+        <button class="int-tab active" data-filter="all">All</button>
+        <button class="int-tab" data-filter="trending">Trending</button>
+        <button class="int-tab" data-filter="education">Education</button>
+        <button class="int-tab" data-filter="technology">Technology</button>
+        <button class="int-tab" data-filter="career">Career</button>
+        <button class="int-tab" data-filter="lifestyle">Lifestyle</button>
+      </div>
+      <div class="int-count"><strong id="selCount">0</strong> selected · Choose at least 3</div>
+      <div class="int-grid" id="interestGrid"></div>
+    </div>
+    <div class="int-footer">
+      <button class="back-link" onclick="showScreen('login')">← Back</button>
+      <button class="btn-build" id="btnBuild" disabled onclick="startBuilding()">Build my intelligence feed →</button>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN: BUILDING ========== -->
+  <div class="screen" id="screen-building">
+    <div class="build-icon">✦</div>
+    <div class="build-label">TrendX Engine</div>
+    <h1 id="buildTitle">Building your intelligence feed.</h1>
+    <p class="sub" id="buildSub">Connecting your interests to the ideas and signals most worth your attention.</p>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="build-steps" id="buildSteps">
+      <span id="s1">Reading your interests</span>
+      <span id="s2">Finding the most useful signals</span>
+      <span id="s3">Shaping your feed</span>
+    </div>
+    <p class="tiny" id="buildHint" style="margin-bottom:20px;">This only takes a moment…</p>
+    <button class="btn-open-feed" id="btnOpenFeed" onclick="openDashboard()">Open my feed →</button>
+  </div>
+
+  <!-- ========== SCREEN: DASHBOARD ========== -->
+  <div class="screen" id="screen-dashboard">
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <div class="logo">TX</div>
+            <div>
+              <h1>TrendX</h1>
+              <p>Paradoxx · SIH26152</p>
+            </div>
+          </div>
+        </div>
+        <nav class="nav">
+          <div class="nav-label">Navigate</div>
+          <button class="nav-btn active" data-page="home" onclick="go('home')">
+            <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+            Home
+          </button>
+          <button class="nav-btn" data-page="trending" onclick="go('trending')">
+            <svg viewBox="0 0 24 24"><path d="M4 19h4V10H4v9zm6 0h4V5h-4v14zm6 0h4v-7h-4v7z"/></svg>
+            Trending
+          </button>
+          <button class="nav-btn" data-page="analytics" onclick="go('analytics')">
+            <svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15l3-3 3 2 5-6"/></svg>
+            Analytics
+          </button>
+          <button class="nav-btn" data-page="network" onclick="go('network')">
+            <svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"/><circle cx="16" cy="7" r="2.2"/><circle cx="17" cy="17" r="2.2"/><path d="M8 11.2 14 8.2M8.2 13.2 15 16.2"/></svg>
+            Network
+          </button>
+          <button class="nav-btn" data-page="audience" onclick="go('audience')">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M4 19c.6-3.2 2.6-5 5-5s4.4 1.8 5 5"/><circle cx="17" cy="9" r="2.2"/><path d="M16 19c.4-2.2 1.6-3.5 3.2-3.8"/></svg>
+            Audience
+          </button>
+        </nav>
+        <div class="nav-spacer"></div>
+        <div class="nav-bottom">
+          <button class="nav-btn" data-page="help" onclick="go('help')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1.2.8-1.2 1.8"/><circle cx="12" cy="17" r=".8" fill="currentColor" stroke="none"/></svg>
+            Help
+          </button>
+          <button class="nav-btn" data-page="profile" onclick="go('profile')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 19c.8-3.4 3.2-5 6.5-5s5.7 1.6 6.5 5"/></svg>
+            Profile
+          </button>
+          <button class="nav-btn" data-page="settings" onclick="go('settings')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M4.8 7.2l1.9 1.1M17.3 15.7l1.9 1.1M4.8 16.8l1.9-1.1M17.3 8.3l1.9-1.1"/></svg>
+            Settings
+          </button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <div class="topbar">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+            <div>
+              <h2 id="pageTitle">Home</h2>
+              <div class="sub" id="pageSub">Your personalized social intelligence feed</div>
+            </div>
+          </div>
+          <div class="tiny" style="text-align:right;">AI-Powered Social Media Intelligence<br/>Mock prototype · Team Paradoxx</div>
+        </div>
+
+        <div class="content">
+          <section class="page active" id="page-home">
+            <div class="grid-2">
+              <div class="stack">
+                <div class="section-title">Personalized feed</div>
+                <div id="homeTopics" class="stack"></div>
+                <div class="section-title" style="margin-top:8px;">Posts in your feed</div>
+                <div id="homePosts" class="stack"></div>
+              </div>
+              <div class="stack">
+                <div class="card">
+                  <div class="card-h">Rising now</div>
+                  <div class="card-b" id="risingNow"></div>
+                </div>
+                <div class="card">
+                  <div class="card-h">Feed snapshot</div>
+                  <div class="card-b">
+                    <div class="tiny" style="margin-bottom:10px;">Engagement on topics in your current feed window.</div>
+                    <div class="chart-wrap" style="height:180px;"><canvas id="homeMetricsChart"></canvas></div>
+                    <div class="legend">
+                      <span><i class="dot" style="background:#111827"></i>Likes</span>
+                      <span><i class="dot" style="background:#2563eb"></i>Views</span>
+                      <span><i class="dot" style="background:#d97706"></i>Comments</span>
+                      <span><i class="dot" style="background:#16a34a"></i>Shares</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="page-trending">
+            <input class="search" id="trendSearch" placeholder="Search trends..." oninput="filterTrends()" />
+            <div id="trendList" class="stack" style="margin-top:14px;"></div>
+          </section>
+
+          <section class="page" id="page-topic">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <button class="back-btn" id="topicBackBtn" onclick="goBackFromTopic()">← Back to Home</button>
+              <span class="tiny" id="topicContextLabel">Personalized topic</span>
+            </div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-b">
+                <div class="tiny" id="topicKindLabel">PERSONALIZED TOPIC</div>
+                <h2 id="topicName" style="font-size:26px;letter-spacing:-.03em;margin:2px 0 4px;">GTA VI</h2>
+                <p class="muted" id="topicSubline">A fast-growing conversation detected across the analyzed platforms.</p>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;" class="tiny" id="topicKpis"></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-h">
+                <span>Detailed explanation</span>
+                <button class="show-analytics" id="showAnalyticsBtn" onclick="revealAnalytics()">Show analytics</button>
+              </div>
+              <div class="card-b">
+                <p id="topicSummary"></p>
+                <div class="q-row" id="qButtons"></div>
+                <div class="explain-box" id="explainBox"></div>
+                <div class="tiny" style="margin-top:10px;">AI Analyst uses timeline, sentiment, audience, influence and cross-platform evidence from the analyzed dataset.</div>
+              </div>
+            </div>
+
+            <div id="analyticsBlock" class="hidden">
+              <div class="grid-split" style="margin-bottom:14px;">
+                <div class="card">
+                  <div class="card-h">① Sentiment analysis</div>
+                  <div class="card-b">
+                    <div class="chart-wrap"><canvas id="sentChart"></canvas></div>
+                    <div class="legend" id="sentLegend"></div>
+                    <div class="tiny" style="margin-top:10px;">Emotion categories detected in the conversation</div>
+                    <div id="emotions" style="margin-top:8px;"></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-h">② Important posts</div>
+                  <div class="card-b" id="impPosts"></div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-bottom:14px;">
+                <div class="card-h">③ Audience profile — age groups and regions</div>
+                <div class="demo-split">
+                  <div>
+                    <div class="section-title">Age groups</div>
+                    <div class="tiny" style="margin-bottom:8px;">6 age groups · aggregate / estimated from available public indicators.</div>
+                    <div id="ageBars"></div>
+                  </div>
+                  <div>
+                    <div class="section-title">Region</div>
+                    <div class="tiny" style="margin-bottom:8px;">Top 5 countries, then other. Sorted by percent.</div>
+                    <div id="regionBars"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-bottom:14px;">
+                <div class="card-h">④ Engagement lines — likes · views · comments · shares</div>
+                <div class="card-b">
+                  <div class="chart-wrap tall"><canvas id="engChart"></canvas></div>
+                  <div class="legend">
+                    <span><i class="dot" style="background:#111827"></i>① Likes</span>
+                    <span><i class="dot" style="background:#2563eb"></i>② Views</span>
+                    <span><i class="dot" style="background:#d97706"></i>③ Comments</span>
+                    <span><i class="dot" style="background:#16a34a"></i>④ Shares</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-bottom:14px;">
+                <div class="card-h">Activity timeline</div>
+                <div class="card-b">
+                  <div class="chart-wrap"><canvas id="timeChart"></canvas></div>
+                  <div style="margin-top:10px;display:flex;justify-content:space-between;" class="tiny">
+                    <span>24h ago</span><span class="spike-note">🔥 Viral spike</span><span>Now</span>
+                  </div>
+                  <input type="range" min="0" max="11" value="11" id="timeSlider" oninput="onSlider(this.value)" />
+                  <div class="explain-box" id="sliderInfo"></div>
+                </div>
+              </div>
+
+              <div class="grid-split" style="margin-bottom:14px;">
+                <div class="card">
+                  <div class="card-h">Platform distribution</div>
+                  <div class="card-b">
+                    <div class="chart-wrap"><canvas id="platChart"></canvas></div>
+                    <p class="tiny" style="margin-top:8px;">Cross-platform topic matching is based on analyzed data available to the system.</p>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-h">Communities</div>
+                  <div class="card-b" id="communities"></div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-bottom:14px;">
+                <div class="card-h">Network &amp; influence</div>
+                <div class="card-b">
+                  <p class="muted" style="margin-bottom:10px;">Who is influencing the conversation?</p>
+                  <div class="net-wrap" id="netGraph"></div>
+                  <p class="tiny" style="margin:10px 0 8px;">Influence is calculated from observed interactions within the analyzed network — not follower count alone.</p>
+                  <div id="influencers"></div>
+                </div>
+              </div>
+
+              <div class="grid-split">
+                <div class="card">
+                  <div class="card-h">Public figures involved</div>
+                  <div class="card-b" id="figures"></div>
+                </div>
+                <div class="card">
+                  <div class="card-h">AI Analyst</div>
+                  <div class="card-b" id="aiAnalyst"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="page-analytics">
+            <div class="grid-3" style="margin-bottom:14px;">
+              <div class="kpi"><div class="k">Topics monitored</div><div class="v">186</div><div class="d">+12 in 24h</div></div>
+              <div class="kpi"><div class="k">Posts analyzed</div><div class="v">248.3K</div><div class="d">Across X, Telegram, Reddit</div></div>
+              <div class="kpi"><div class="k">Active spikes</div><div class="v">6</div><div class="d">GTA VI leading</div></div>
+            </div>
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-h">Ecosystem engagement — likes, views, comments, shares</div>
+              <div class="card-b">
+                <div class="chart-wrap tall"><canvas id="globalEngChart"></canvas></div>
+                <div class="legend">
+                  <span><i class="dot" style="background:#111827"></i>Likes</span>
+                  <span><i class="dot" style="background:#2563eb"></i>Views</span>
+                  <span><i class="dot" style="background:#d97706"></i>Comments</span>
+                  <span><i class="dot" style="background:#16a34a"></i>Shares</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid-split">
+              <div class="card">
+                <div class="card-h">Overall sentiment mix</div>
+                <div class="card-b"><div class="chart-wrap"><canvas id="globalSentChart"></canvas></div></div>
+              </div>
+              <div class="card">
+                <div class="card-h">Top rising topics</div>
+                <div class="card-b" id="analyticsTrends"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="page-network">
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-h">Conversation network — current focus: GTA VI</div>
+              <div class="card-b">
+                <p class="muted" style="margin-bottom:10px;">Nodes are accounts. Edges are observed replies, mentions and shares. Node size reflects interaction influence.</p>
+                <div class="net-wrap" id="netGraphPage"></div>
+                <p class="tiny" style="margin-top:10px;">Influence is calculated from observed interactions within the analyzed network.</p>
+              </div>
+            </div>
+            <div class="grid-split">
+              <div class="card">
+                <div class="card-h">Top influential accounts</div>
+                <div class="card-b" id="netInfluencers"></div>
+              </div>
+              <div class="card">
+                <div class="card-h">Detected communities</div>
+                <div class="card-b" id="netCommunities"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="page-audience">
+            <p class="muted" style="margin-bottom:12px;">Aggregate / estimated from available public indicators. Not individual-level profiling.</p>
+            <div class="card">
+              <div class="card-h">Audience profile — age groups and regions</div>
+              <div class="demo-split">
+                <div id="audAge"></div>
+                <div id="audRegion"></div>
+              </div>
+            </div>
+            <div class="card" style="margin-top:14px;">
+              <div class="card-h">Interest clusters</div>
+              <div class="card-b tags">
+                <div class="tag"><b>Gaming</b>38%</div>
+                <div class="tag"><b>Technology / AI</b>24%</div>
+                <div class="tag"><b>Entertainment</b>17%</div>
+                <div class="tag"><b>Education / Careers</b>12%</div>
+                <div class="tag"><b>Sports</b>9%</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="page" id="page-help">
+            <div class="card"><div class="card-b">
+              <h3 style="margin-bottom:8px;">How TrendX works in this prototype</h3>
+              <p>Home is your personalized feed. Opening a Home topic stays inside Home. Trending is a separate ecosystem-wide list. After a topic opens, only the summary and questions appear until you click Show analytics.</p>
+            </div></div>
+          </section>
+          <section class="page" id="page-profile">
+            <div class="card"><div class="card-b">
+              <div style="display:flex;gap:14px;align-items:center;">
+                <div class="avatar" style="background:#111827;width:52px;height:52px;">PR</div>
+                <div>
+                  <div style="font-weight:700;font-size:16px;">Paradoxx Analyst</div>
+                  <div class="muted">@paradoxx · SIH26152 demo account</div>
+                </div>
+              </div>
+              <p style="margin-top:14px;">Role: Intelligence reviewer. Saved topics: GTA VI, Agentic AI, College Placements.</p>
+            </div></div>
+          </section>
+          <section class="page" id="page-settings">
+            <div class="card"><div class="card-b">
+              <p><b>Theme</b> — Light professional (locked for this demo)</p>
+              <p style="margin-top:8px;"><b>Sources</b> — X, Telegram, Reddit (mock connectors)</p>
+              <p style="margin-top:8px;"><b>Refresh</b> — Simulated 15-minute collection window</p>
+            </div></div>
+          </section>
+
+          <p class="footer-note">Prototype dashboard — displayed analytics use mock data. Production data will come from permitted platform APIs and aggregated/anonymized analysis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ========== INTEREST DATA (from video) ========== */
+const INTERESTS = [
+  { id: "ai", name: "Artificial Intelligence", cat: "technology", trending: true },
+  { id: "tech", name: "Technology", cat: "technology", trending: false },
+  { id: "comp-exams", name: "Competitive Exams", cat: "education", trending: true },
+  { id: "startups", name: "Startups & Business", cat: "career", trending: true },
+  { id: "sports", name: "Sports", cat: "lifestyle", trending: true },
+  { id: "health", name: "Health & Wellness", cat: "lifestyle", trending: true },
+  { id: "coding", name: "Coding & Software", cat: "technology", trending: false },
+  { id: "cyber", name: "Cybersecurity", cat: "technology", trending: false },
+  { id: "finance", name: "Finance & Investing", cat: "career", trending: true },
+  { id: "career", name: "Career Development", cat: "career", trending: false },
+  { id: "upsc", name: "UPSC & Government Exams", cat: "education", trending: false },
+  { id: "jee", name: "JEE & NEET Preparation", cat: "education", trending: false },
+  { id: "science", name: "Science & Space", cat: "technology", trending: false },
+  { id: "news", name: "News & Current Affairs", cat: "lifestyle", trending: true },
+  { id: "ent", name: "Entertainment", cat: "lifestyle", trending: false },
+  { id: "gaming", name: "Gaming", cat: "lifestyle", trending: false },
+  { id: "music", name: "Music", cat: "lifestyle", trending: false },
+  { id: "travel", name: "Travel", cat: "lifestyle", trending: false },
+  { id: "books", name: "Books & Learning", cat: "education", trending: false },
+  { id: "climate", name: "Climate & Environment", cat: "lifestyle", trending: true },
+  { id: "design", name: "Design & Creativity", cat: "lifestyle", trending: false },
+  { id: "productivity", name: "Productivity", cat: "career", trending: false },
+  { id: "movies", name: "Movies & Pop Culture", cat: "lifestyle", trending: false },
+  { id: "entrepreneur", name: "Entrepreneurship", cat: "career", trending: false }
+];
+
+let selectedInterests = new Set();
+let currentFilter = "all";
+let authMode = "login"; // "login" | "signup"
+let currentUser = null;
+
+/* ========== FIREBASE ========== */
+const firebaseConfig = {
+  apiKey: "AIzaSyB35m8gPcPx22cpxYfxOM3wcNaHt-GYxBs",
+  authDomain: "trendx-ab309.firebaseapp.com",
+  projectId: "trendx-ab309",
+  storageBucket: "trendx-ab309.firebasestorage.app",
+  messagingSenderId: "801939932279",
+  appId: "1:801939932279:web:fa57a10f69c482ee603272",
+  measurementId: "G-DVKYGZ5WCT"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged((user) => {
+  currentUser = user;
+  if (user) {
+    // Already signed in — skip login if on login screen
+    const loginScreen = document.getElementById("screen-login");
+    if (loginScreen && loginScreen.classList.contains("active")) {
+      goToInterests();
+    }
+  }
+});
+
+function showAuthError(msg) {
+  const el = document.getElementById("authError");
+  el.textContent = msg || "";
+  el.style.display = msg ? "block" : "none";
+}
+
+function setAuthBusy(busy) {
+  const btn = document.getElementById("btnAuth");
+  const gBtn = document.getElementById("btnGoogle");
+  btn.disabled = busy;
+  gBtn.disabled = busy;
+  if (busy) {
+    btn.textContent = "Please wait…";
+    document.getElementById("googleLabel").textContent = "Connecting…";
+  } else {
+    btn.textContent = authMode === "signup" ? "Create account →" : "Sign in →";
+    document.getElementById("googleLabel").textContent = "Continue with Google";
+  }
+}
+
+function firebaseErrorMessage(error) {
+  const code = error && error.code;
+  const map = {
+    "auth/invalid-credential": "Email or password is incorrect.",
+    "auth/wrong-password": "Email or password is incorrect.",
+    "auth/user-not-found": "No account found with this email.",
+    "auth/invalid-email": "Enter a valid email address.",
+    "auth/email-already-in-use": "An account already exists with this email.",
+    "auth/weak-password": "Password must be at least 6 characters.",
+    "auth/popup-closed-by-user": "Google sign-in was closed before it finished.",
+    "auth/popup-blocked": "Popup was blocked. Allow popups for this site.",
+    "auth/unauthorized-domain": "Add this domain in Firebase Console → Authentication → Settings → Authorized domains.",
+    "auth/network-request-failed": "Network error. Check your connection.",
+    "auth/too-many-requests": "Too many attempts. Try again later.",
+    "auth/operation-not-allowed": "Enable Email/Password or Google in Firebase Console → Authentication → Sign-in method."
+  };
+  return (code && map[code]) || (error && error.message) || "Authentication failed. Try again.";
+}
+
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "signup" : "login";
+  showAuthError("");
+  document.getElementById("authTitle").textContent = authMode === "signup" ? "Create your account" : "Welcome back";
+  document.getElementById("authSub").textContent = authMode === "signup"
+    ? "Set up your TrendX profile in less than a minute."
+    : "Sign in to continue to your personalized space.";
+  document.getElementById("nameField").style.display = authMode === "signup" ? "block" : "none";
+  document.getElementById("forgotLink").style.display = authMode === "signup" ? "none" : "block";
+  document.getElementById("btnAuth").textContent = authMode === "signup" ? "Create account →" : "Sign in →";
+  document.getElementById("authSwitch").innerHTML = authMode === "signup"
+    ? 'Already have an account? <a href="#" onclick="toggleAuthMode();return false;">Sign in</a>'
+    : 'New to TrendX? <a href="#" onclick="toggleAuthMode();return false;">Sign up</a>';
+}
+
+async function signInWithGoogle() {
+  showAuthError("");
+  setAuthBusy(true);
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+    goToInterests();
+  } catch (err) {
+    showAuthError(firebaseErrorMessage(err));
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function submitAuth() {
+  showAuthError("");
+  const email = (document.getElementById("loginEmail").value || "").trim();
+  const password = document.getElementById("loginPass").value || "";
+  const name = (document.getElementById("loginName").value || "").trim();
+
+  if (!email || !password) {
+    showAuthError("Please enter email and password.");
+    return;
+  }
+  if (authMode === "signup" && password.length < 6) {
+    showAuthError("Password must be at least 6 characters.");
+    return;
+  }
+
+  setAuthBusy(true);
+  try {
+    if (authMode === "signup") {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      if (name) await cred.user.updateProfile({ displayName: name });
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+    goToInterests();
+  } catch (err) {
+    showAuthError(firebaseErrorMessage(err));
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function resetPassword() {
+  showAuthError("");
+  const email = (document.getElementById("loginEmail").value || "").trim();
+  if (!email) {
+    showAuthError("Enter your email first, then click Forgot password.");
+    return;
+  }
+  setAuthBusy(true);
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showAuthError("");
+    alert("Password reset email sent. Check your inbox.");
+  } catch (err) {
+    showAuthError(firebaseErrorMessage(err));
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function goToInterests() {
+  showScreen("interests");
+  renderInterests();
+}
+
+function signOutUser() {
+  auth.signOut().then(() => {
+    currentUser = null;
+    selectedInterests = new Set();
+    showScreen("login");
+  });
+}
+
+function renderInterests() {
+  const grid = document.getElementById("interestGrid");
+  const filtered = INTERESTS.filter(i => {
+    if (currentFilter === "all") return true;
+    if (currentFilter === "trending") return i.trending;
+    return i.cat === currentFilter;
+  });
+  grid.innerHTML = filtered.map(i => `
+    <div class="int-chip ${selectedInterests.has(i.id) ? "selected" : ""}" data-id="${i.id}" onclick="toggleInterest('${i.id}')">
+      ${i.name}
+      ${i.trending ? '<span class="tag-trending">Trending</span>' : ""}
+    </div>
+  `).join("");
+  updateSelCount();
+}
+
+function toggleInterest(id) {
+  if (selectedInterests.has(id)) selectedInterests.delete(id);
+  else selectedInterests.add(id);
+  renderInterests();
+}
+
+function updateSelCount() {
+  const n = selectedInterests.size;
+  document.getElementById("selCount").textContent = n;
+  document.getElementById("btnBuild").disabled = n < 3;
+}
+
+document.querySelectorAll(".int-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".int-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentFilter = tab.dataset.filter;
+    renderInterests();
+  });
+});
+
+function startBuilding() {
+  showScreen("building");
+  const fill = document.getElementById("progressFill");
+  const s1 = document.getElementById("s1");
+  const s2 = document.getElementById("s2");
+  const s3 = document.getElementById("s3");
+  const title = document.getElementById("buildTitle");
+  const sub = document.getElementById("buildSub");
+  const hint = document.getElementById("buildHint");
+  const btn = document.getElementById("btnOpenFeed");
+
+  fill.style.width = "0%";
+  s1.className = ""; s2.className = ""; s3.className = "";
+  title.textContent = "Building your intelligence feed.";
+  sub.textContent = "Connecting your interests to the ideas and signals most worth your attention.";
+  hint.style.display = "block";
+  btn.classList.remove("show");
+
+  setTimeout(() => { fill.style.width = "33%"; s1.className = "done"; }, 400);
+  setTimeout(() => { fill.style.width = "66%"; s2.className = "done"; }, 1100);
+  setTimeout(() => {
+    fill.style.width = "100%";
+    s3.className = "done";
+    title.textContent = "Your intelligence feed is ready.";
+    sub.textContent = "Your selected interests are now prepared for a focused feed.";
+    hint.style.display = "none";
+    btn.classList.add("show");
+  }, 1800);
+}
+
+function openDashboard() {
+  showScreen("dashboard");
+  renderHome();
+}
+
+/* ========== DASHBOARD LOGIC (from provided HTML) ========== */
+const TRENDS = {
+  "gta-vi": {
+    id: "gta-vi", name: "GTA VI", rank: 1, growth: 184,
+    posts: "32.8K", interactions: "68K",
+    oneLine: "A new official update is accelerating discussion across gaming communities.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "GTA VI is the top rising topic in the current window. Volume is driven by an official update, trailer discussion and speculation about release timing. The conversation is concentrated on X and Reddit, with Telegram channels amplifying clips and stills.",
+    answers: {
+      why: "An official update plus high-engagement trailer and speculation posts lifted volume well above the recent gaming baseline.",
+      start: "Activity ticked up after the official post, then widened into quote-posts and long Reddit threads.",
+      react: "Mostly excitement and humor, with some impatience about the release window.",
+      who: "Gaming news handles and large fan accounts show the strongest observed influence.",
+      spread: "X leads short reactions. Reddit hosts longer theory threads. Telegram forwards clips."
+    },
+    sentiment: { Positive: 58, Negative: 12, Mixed: 14, Neutral: 16 },
+    emotions: [["Excitement",34],["Humor",20],["Support",14],["Neutral",16],["Anxiety",8],["Anger",8]],
+    age: [["<18",18],["18–30",52],["31–40",18],["41–50",8],["51–65",3],[">65",1]],
+    regions: [["USA",28],["India",18],["UK",11],["Brazil",8],["Canada",6],["Other",29]],
+    platforms: { X: 62, Telegram: 16, Reddit: 22 },
+    communities: [["Gamers",48],["News",18],["Memes",16],["Creators",10],["Other",8]],
+    influencers: [["@gamingcentral","News","9.2K"],["@gameupdates","Aggregator","7.4K"],["@dailygames","Fan hub","5.1K"]],
+    figures: [["@rockstargames","Official","High activity association — detected in analyzed data"]],
+    analyst: "This is a gaming-volume spike driven by an official update. Excitement and humor dominate. Influence is concentrated in a small set of news and fan accounts.",
+    imp: [
+      { plat:"X", user:"@gamingcentral", text:"GTA VI discussion has accelerated again after a new official update.", likes:"8.1K", views:"214K", comments:"734", shares:"2.2K", time:"31m" },
+      { plat:"Reddit", user:"u/trailerthread", text:"Official stills and a short clip are circulating. Most of the thread is release-window speculation.", likes:"4.6K", views:"89K", comments:"1.1K", shares:"620", time:"1h" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[12,14,15,18,22,28,36,48,72,88,82,90],
+      likes:[7,8,9,11,14,18,24,32,48,58,54,60],
+      views:[35,40,42,50,62,80,110,150,220,260,240,270],
+      comments:[2,2,3,3,4,6,8,11,18,22,20,24],
+      shares:[1,1,2,2,3,4,6,9,14,18,16,19],
+      events: Array(12).fill("").map((_,i)=> i===9 ? "🔥 Viral spike around the official update." : "Conversation evolving versus the 24h baseline.")
+    }
+  },
+  "agentic-ai": {
+    id: "agentic-ai", name: "Agentic AI", rank: 2, growth: 112,
+    posts: "24.1K", interactions: "47K",
+    oneLine: "Developers are debating autonomous agents and their impact on software jobs.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "Agentic AI is rising as developers share demos, failure cases and job-impact takes. The system sees a clear lift versus the recent AI baseline, with practical and mixed sentiment.",
+    answers: {
+      why: "A cluster of agent demos and job-impact threads lifted volume above the recent AI baseline.",
+      start: "Morning demo posts were quote-posted into larger developer circles.",
+      react: "Practical and mixed. Excitement for useful runs, anxiety about review burden and jobs.",
+      who: "Developer-educators and AI-news accounts show the strongest observed influence.",
+      spread: "X spreads demos. Reddit holds longer write-ups. Telegram forwards tool lists."
+    },
+    sentiment: { Positive: 42, Negative: 22, Mixed: 20, Neutral: 16 },
+    emotions: [["Excitement",24],["Anxiety",20],["Support",16],["Humor",14],["Neutral",16],["Anger",10]],
+    age: [["<18",4],["18–30",48],["31–40",28],["41–50",14],["51–65",5],[">65",1]],
+    regions: [["USA",32],["India",24],["UK",10],["Germany",7],["Canada",5],["Other",22]],
+    platforms: { X: 55, Telegram: 14, Reddit: 31 },
+    communities: [["Developers",46],["AI news",18],["Students",14],["Researchers",12],["Other",10]],
+    influencers: [["@aidaily","News","8.4K"],["@devnotes","Creator","6.2K"],["@agentlab","Community","4.8K"]],
+    figures: [],
+    analyst: "This is a developer-heavy AI spike. Mixed sentiment reflects both useful demos and job-impact anxiety. Influence is spread across news and educator accounts.",
+    imp: [
+      { plat:"X", user:"@aidaily", text:"The new AI model release is creating a large discussion around coding agents and autonomous workflows.", likes:"6.4K", views:"180K", comments:"890", shares:"1.9K", time:"12m" },
+      { plat:"X", user:"@technews", text:"Developers are discussing the impact of agentic AI on software engineering jobs.", likes:"3.2K", views:"91K", comments:"670", shares:"980", time:"48m" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[10,11,12,15,18,20,34,40,55,61,58,64],
+      likes:[6,6,7,9,11,13,22,26,34,38,36,41],
+      views:[30,32,35,44,50,58,90,110,150,170,160,175],
+      comments:[2,2,2,3,4,4,8,9,12,14,13,15],
+      shares:[1,1,1,2,2,3,6,7,9,10,9,11],
+      events: Array(12).fill("").map((_,i)=> i===9 ? "🔥 Viral spike around a widely shared agent demo." : "Conversation evolving versus the 24h baseline.")
+    }
+  },
+  "doomsday": {
+    id: "doomsday", name: "Avengers: Doomsday", rank: 3, growth: 91,
+    posts: "18.9K", interactions: "39K",
+    oneLine: "Cast photos and role speculation are lifting a new entertainment spike.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "Avengers: Doomsday is climbing after a cluster of cast and production posts. The system sees a rise versus the recent entertainment baseline, with speculation, stills and joke threads forming the bulk of the conversation.",
+    answers: {
+      why: "A burst of cast-related posts and quote-posts lifted volume well above the recent baseline.",
+      start: "Activity ticked up after a widely circulated still, then widened into speculation threads.",
+      react: "Mostly excitement and humor, with some skepticism about plot rumors.",
+      who: "Entertainment news handles and fan community accounts show the strongest observed influence.",
+      spread: "X leads short reactions. Reddit hosts longer rumor roundups. Telegram channels forward images."
+    },
+    sentiment: { Positive: 56, Negative: 10, Mixed: 14, Neutral: 20 },
+    emotions: [["Excitement",32],["Humor",22],["Support",16],["Neutral",20],["Anxiety",6],["Anger",4]],
+    age: [["<18",14],["18–30",48],["31–40",22],["41–50",10],["51–65",4],[">65",2]],
+    regions: [["USA",31],["India",22],["UK",12],["Mexico",6],["Canada",5],["Other",24]],
+    platforms: { X: 64, Telegram: 18, Reddit: 18 },
+    communities: [["Fans",46],["News",20],["Memes",18],["Creators",9],["Other",7]],
+    influencers: [["@screenwatch","News","7.1K"],["@mcu_daily","Fan hub","6.6K"],["@popframe","Creator","4.4K"]],
+    figures: [["@mcu_daily","Fan community account","High activity association — detected in analyzed data"]],
+    analyst: "This is an entertainment-volume spike driven by cast speculation and image circulation, not a confirmed plot leak. Humor and excitement dominate the emotion mix.",
+    imp: [
+      { plat:"X", user:"@screenwatch", text:"New Doomsday stills are circulating again. Most of the thread is cast speculation, not confirmed reporting.", likes:"5.2K", views:"140K", comments:"610", shares:"1.4K", time:"1h" },
+      { plat:"Telegram", user:"@filmwire", text:"Image pack forwarded in three large channels within 20 minutes.", likes:"2.4K", views:"52K", comments:"190", shares:"880", time:"2h" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[8,8,9,10,11,16,18,22,40,48,44,47],
+      likes:[5,5,6,6,7,10,12,14,28,32,30,33],
+      views:[22,23,24,26,30,44,50,60,120,140,128,135],
+      comments:[1,1,1,2,2,3,3,4,9,11,10,11],
+      shares:[1,1,1,1,1,2,2,3,8,9,8,9],
+      events: Array(12).fill("Entertainment conversation tracking above the quiet baseline.")
+    }
+  },
+  "placements": {
+    id: "placements", name: "College Placements", rank: 4, growth: 73,
+    posts: "14.6K", interactions: "26K",
+    oneLine: "Offer-season posts and package screenshots are lifting campus career talk.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "College Placements is rising as students share offer updates, interview experiences and package comparisons. The spike is concentrated in India-linked conversations, with mixed sentiment around fairness, pressure and celebration.",
+    answers: {
+      why: "Seasonal offer posts plus a few high-engagement experience threads lifted volume versus the recent campus baseline.",
+      start: "Early morning placement-update posts were followed by afternoon comparison threads.",
+      react: "Celebration sits next to anxiety. Mixed and negative posts often mention pressure and unequal outcomes.",
+      who: "Campus pages, senior students and career-news handles show the strongest observed interaction influence.",
+      spread: "X and Telegram carry fast updates. Reddit threads hold longer interview write-ups."
+    },
+    sentiment: { Positive: 39, Negative: 27, Mixed: 20, Neutral: 14 },
+    emotions: [["Support",22],["Anxiety",21],["Excitement",18],["Anger",13],["Neutral",14],["Humor",12]],
+    age: [["<18",6],["18–30",71],["31–40",15],["41–50",5],["51–65",2],[">65",1]],
+    regions: [["India",62],["USA",9],["UAE",5],["UK",4],["Canada",3],["Other",17]],
+    platforms: { X: 48, Telegram: 32, Reddit: 20 },
+    communities: [["Students",54],["Seniors",16],["News",12],["Parents",8],["Other",10]],
+    influencers: [["@campuswire","Campus page","5.1K"],["@offertrack","Aggregator","3.9K"],["@seniornotes","Student","3.2K"]],
+    figures: [],
+    analyst: "This is a seasonal campus spike. Volume is high in the 18–30 group and India-heavy region mix. Sentiment is split between celebration and pressure.",
+    imp: [
+      { plat:"X", user:"@campuswire", text:"Placement season updates are stacking up faster than last week. Most viral posts are offer screenshots plus interview threads.", likes:"3.1K", views:"72K", comments:"440", shares:"760", time:"40m" },
+      { plat:"Telegram", user:"@placementdesk", text:"Today's compiled list from three campus groups. Treat package numbers as unverified.", likes:"1.8K", views:"29K", comments:"210", shares:"540", time:"1h" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[9,8,7,10,16,20,22,28,33,38,36,40],
+      likes:[4,4,3,6,9,12,13,16,19,22,21,24],
+      views:[18,16,15,24,40,52,58,70,82,90,86,95],
+      comments:[1,1,1,2,3,4,4,5,6,7,7,8],
+      shares:[1,1,1,1,2,3,3,4,5,6,5,6],
+      events: Array(12).fill("Campus placement conversation versus the recent baseline.")
+    }
+  },
+  "coding-agents": {
+    id: "coding-agents", name: "AI Coding Agents", rank: 5, growth: 68,
+    posts: "11.2K", interactions: "21K",
+    oneLine: "Tool comparisons and failed-run screenshots are keeping this thread warm.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "AI Coding Agents is a sibling conversation to Agentic AI, more tactical and tool-specific. People compare editors, show broken diffs and argue about review burden.",
+    answers: {
+      why: "Tool comparison threads and a few viral fail/success clips lifted activity.",
+      start: "A morning benchmark post was quote-posted into larger developer circles.",
+      react: "Practical and mixed. Humor around failures, support for useful runs.",
+      who: "Developer-educators and tool-news accounts dominate observed interactions.",
+      spread: "Reddit has the longest write-ups. X spreads the clips. Telegram forwards tool lists."
+    },
+    sentiment: { Positive: 38, Negative: 24, Mixed: 22, Neutral: 16 },
+    emotions: [["Humor",20],["Excitement",18],["Support",16],["Anxiety",16],["Neutral",16],["Anger",14]],
+    age: [["<18",5],["18–30",52],["31–40",27],["41–50",11],["51–65",4],[">65",1]],
+    regions: [["USA",27],["India",26],["UK",9],["Germany",8],["Canada",6],["Other",24]],
+    platforms: { X: 51, Telegram: 16, Reddit: 33 },
+    communities: [["Developers",48],["Tool makers",16],["News",14],["Students",12],["Other",10]],
+    influencers: [["@devnotes","Creator","5.8K"],["@codeagents","Community","4.1K"]],
+    figures: [],
+    analyst: "This cluster is more hands-on than the broader Agentic AI topic. Fail clips and benchmark posts explain most of the spike.",
+    imp: [
+      { plat:"Reddit", user:"u/tab-complete", text:"Ran the same refactor in three coding agents. One produced a clean PR, two invented APIs. Notes in comments.", likes:"1.9K", views:"27K", comments:"380", shares:"240", time:"3h" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[7,7,8,9,11,14,18,21,26,30,28,31],
+      likes:[3,3,4,4,5,7,9,11,14,16,15,17],
+      views:[14,15,16,18,22,30,40,48,60,70,66,72],
+      comments:[1,1,1,1,2,2,3,3,4,5,5,5],
+      shares:[0,0,1,1,1,1,2,2,3,4,3,4],
+      events: Array(12).fill("Tool-specific coding-agent discussion.")
+    }
+  },
+  "cricket": {
+    id: "cricket", name: "Cricket", rank: 6, growth: 51,
+    posts: "9.8K", interactions: "19K",
+    oneLine: "Match-day reactions and clip sharing are lifting sports conversation.",
+    sub: "A fast-growing conversation detected across the analyzed platforms.",
+    summary: "Cricket is up on a match-linked window. Clip sharing, score reactions and humor posts explain most of the lift versus the sports baseline.",
+    answers: {
+      why: "Match-day clip circulation and score reactions produced a clear volume lift.",
+      start: "Pre-match talk was modest; the spike follows a high-engagement passage of play.",
+      react: "Excitement and humor lead. Anger appears in umpire / selection threads.",
+      who: "Sports news handles and fan pages show the strongest observed influence.",
+      spread: "X dominates live reaction. Telegram forwards clips. Reddit hosts longer post-match threads."
+    },
+    sentiment: { Positive: 52, Negative: 16, Mixed: 14, Neutral: 18 },
+    emotions: [["Excitement",30],["Humor",22],["Support",16],["Neutral",18],["Anger",8],["Anxiety",6]],
+    age: [["<18",11],["18–30",46],["31–40",24],["41–50",12],["51–65",5],[">65",2]],
+    regions: [["India",48],["UK",12],["Australia",9],["Pakistan",8],["UAE",5],["Other",18]],
+    platforms: { X: 70, Telegram: 20, Reddit: 10 },
+    communities: [["Fans",58],["News",18],["Memes",14],["Other",10]],
+    influencers: [["@cricdesk","News","6.8K"],["@boundarycam","Fan clip","4.7K"]],
+    figures: [["@cricdesk","Sports news","High activity association — detected in analyzed data"]],
+    analyst: "This is a match-window sports spike. It is large in India and on X, with excitement and humor as the main emotions.",
+    imp: [
+      { plat:"X", user:"@cricdesk", text:"That over is doing the rounds for a reason. Live reactions are outrunning the official clip.", likes:"7.4K", views:"210K", comments:"920", shares:"2.8K", time:"26m" }
+    ],
+    timeline: {
+      labels: ["24h","22h","20h","18h","16h","14h","12h","10h","8h","6h","4h","Now"],
+      activity:[6,5,5,6,8,10,12,18,28,44,36,34],
+      likes:[3,2,2,3,4,6,7,11,18,30,24,22],
+      views:[12,10,10,12,18,24,30,50,80,140,110,100],
+      comments:[1,1,1,1,1,2,2,4,6,10,8,7],
+      shares:[0,0,0,1,1,1,2,3,5,9,6,5],
+      events: Array(12).fill("Match-linked cricket conversation.")
+    }
+  }
+};
+
+const ORDER = ["gta-vi","agentic-ai","doomsday","placements","coding-agents","cricket"];
+
+const HOME_POSTS = [
+  { name:"AI Daily", handle:"@aidaily", time:"12m", color:"#1f2937", initials:"AI",
+    text:"The new AI model release is creating a large discussion around coding agents and autonomous workflows.",
+    likes:"6.4K", views:"180K", comments:"890", shares:"1.9K", topic:"agentic-ai" },
+  { name:"Gaming Central", handle:"@gamingcentral", time:"31m", color:"#14532d", initials:"GC",
+    text:"GTA VI discussion has accelerated again after a new official update.",
+    likes:"8.1K", views:"214K", comments:"734", shares:"2.2K", topic:"gta-vi" },
+  { name:"Tech News", handle:"@technews", time:"48m", color:"#1e3a8a", initials:"TN",
+    text:"Developers are discussing the impact of agentic AI on software engineering jobs.",
+    likes:"3.2K", views:"91K", comments:"670", shares:"980", topic:"agentic-ai" },
+  { name:"Campus Wire", handle:"@campuswire", time:"1h", color:"#7c2d12", initials:"CW",
+    text:"Placement-season threads are stacking faster than last week. Most of the reach is offer posts plus interview write-ups.",
+    likes:"3.1K", views:"72K", comments:"440", shares:"760", topic:"placements" },
+  { name:"Screen Watch", handle:"@screenwatch", time:"2h", color:"#581c87", initials:"SW",
+    text:"Doomsday stills are circulating again. Most of the conversation is cast speculation, not confirmed reporting.",
+    likes:"5.2K", views:"140K", comments:"610", shares:"1.4K", topic:"doomsday" }
+];
+
+const TITLES = {
+  home: ["Home", "Your personalized social intelligence feed"],
+  trending: ["Trending", "What is becoming important across the analyzed ecosystem"],
+  topic: ["Topic", "Detailed explanation"],
+  analytics: ["Analytics", "Ecosystem-level view across monitored topics"],
+  network: ["Network", "Accounts, interactions and influence inside analyzed conversations"],
+  audience: ["Audience", "Aggregate age, region and interest profile"],
+  help: ["Help", "How to read this prototype"],
+  profile: ["Profile", "Demo analyst account"],
+  settings: ["Settings", "Prototype preferences"]
+};
+
+let charts = {};
+let currentTopic = "gta-vi";
+let lastQuestion = "why";
+let topicSource = "home";
+let analyticsVisible = false;
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function setNav(page) {
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+}
+
+function go(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-" + page).classList.add("active");
+  setNav(page);
+  const t = TITLES[page];
+  document.getElementById("pageTitle").textContent = t[0];
+  document.getElementById("pageSub").textContent = t[1];
+  closeSidebar();
+  window.scrollTo(0, 0);
+  if (page === "home") renderHome();
+  if (page === "trending") renderTrending();
+  if (page === "analytics") renderAnalyticsPage();
+  if (page === "network") renderNetworkPage();
+  if (page === "audience") renderAudiencePage();
+}
+
+function goBackFromTopic() {
+  go(topicSource === "trending" ? "trending" : topicSource === "analytics" ? "analytics" : "home");
+}
+
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("open");
+}
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("open");
+}
+
+function metricRow(p) {
+  return `<div class="metrics">
+    <span>♥ ${p.likes}</span>
+    <span>◉ ${p.views}</span>
+    <span>💬 ${p.comments}</span>
+    <span>↗ ${p.shares}</span>
+  </div>`;
+}
+
+function renderHome() {
+  document.getElementById("homeTopics").innerHTML = ORDER.slice(0,4).map(id => {
+    const t = TRENDS[id];
+    return `<article class="topic-card" onclick="openTopic('${id}','home')">
+      <div class="rank">Topic ${t.rank}</div>
+      <h3>${t.name}</h3>
+      <div class="one-line">${t.oneLine}</div>
+      <button class="show-more" onclick="event.stopPropagation();openTopic('${id}','home')">Show more</button>
+    </article>`;
+  }).join("");
+
+  document.getElementById("homePosts").innerHTML = HOME_POSTS.map(p => `
+    <article class="post">
+      <div class="avatar" style="background:${p.color}">${p.initials}</div>
+      <div style="flex:1">
+        <div class="post-head">
+          <span class="name">${p.name}</span>
+          <span class="handle">${p.handle}</span>
+          <span class="time">· ${p.time}</span>
+        </div>
+        <div class="post-text">${p.text}</div>
+        ${metricRow(p)}
+        <button class="show-more" onclick="openTopic('${p.topic}','home')">Open topic from feed</button>
+      </div>
+    </article>`).join("");
+
+  document.getElementById("risingNow").innerHTML = ORDER.slice(0,4).map(id => {
+    const t = TRENDS[id];
+    return `<div class="rising-item" onclick="openTopic('${id}','home')">
+      <span class="rt-rank">#${t.rank}</span>
+      <div><div class="rt-name">${t.name}</div><div class="tiny">${t.posts} posts</div></div>
+      <span class="rt-delta">+${t.growth}% activity</span>
+    </div>`;
+  }).join("");
+
+  const g = TRENDS["gta-vi"].timeline;
+  destroyChart("homeMetrics");
+  charts.homeMetrics = new Chart(document.getElementById("homeMetricsChart"), lineCfg(g.labels, g));
+}
+
+function filterTrends() {
+  const q = (document.getElementById("trendSearch").value || "").toLowerCase();
+  renderTrending(q);
+}
+
+function renderTrending(q="") {
+  document.getElementById("trendList").innerHTML = ORDER.filter(id => {
+    const t = TRENDS[id];
+    return !q || t.name.toLowerCase().includes(q);
+  }).map(id => {
+    const t = TRENDS[id];
+    return `<article class="trend-row" onclick="openTopic('${id}','trending')">
+      <div class="num">#${t.rank}</div>
+      <div>
+        <h3>${t.name}</h3>
+        <div class="trend-meta">${t.posts} posts · ${t.interactions} interactions · ${t.oneLine}</div>
+      </div>
+      <div class="delta-pill">+${t.growth}%</div>
+    </article>`;
+  }).join("") || `<p class="muted">No trends match that search.</p>`;
+}
+
+function hideAnalytics() {
+  analyticsVisible = false;
+  document.getElementById("analyticsBlock").classList.add("hidden");
+  document.getElementById("showAnalyticsBtn").textContent = "Show analytics";
+}
+
+function revealAnalytics() {
+  if (analyticsVisible) {
+    hideAnalytics();
+    return;
+  }
+  analyticsVisible = true;
+  document.getElementById("analyticsBlock").classList.remove("hidden");
+  document.getElementById("showAnalyticsBtn").textContent = "Hide analytics";
+  const t = TRENDS[currentTopic];
+  drawTopicCharts(t);
+  onSlider(document.getElementById("timeSlider").value);
+  setTimeout(() => {
+    document.getElementById("analyticsBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 40);
+}
+
+function openTopic(id, source) {
+  currentTopic = id;
+  topicSource = source || "home";
+  const t = TRENDS[id];
+  const fromTrending = topicSource === "trending";
+
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-topic").classList.add("active");
+  setNav(fromTrending ? "trending" : topicSource === "analytics" ? "analytics" : "home");
+
+  document.getElementById("pageTitle").textContent = fromTrending ? "Trending topic" : "Home topic";
+  document.getElementById("pageSub").textContent = fromTrending
+    ? t.name + " — ecosystem trend detail"
+    : t.name + " — from your personalized feed";
+  document.getElementById("topicBackBtn").textContent = fromTrending ? "← Back to Trending" : "← Back to Home";
+  document.getElementById("topicContextLabel").textContent = fromTrending ? "Ecosystem trending topic" : "Personalized topic";
+  document.getElementById("topicKindLabel").textContent = fromTrending ? "TRENDING TOPIC" : "PERSONALIZED TOPIC";
+
+  hideAnalytics();
+  window.scrollTo(0, 0);
+
+  document.getElementById("topicName").textContent = t.name;
+  document.getElementById("topicSubline").textContent = t.sub;
+  document.getElementById("topicKpis").innerHTML =
+    `<span>+${t.growth}% activity</span><span>${t.posts} posts</span><span>${t.interactions} interactions</span>`;
+  document.getElementById("topicSummary").textContent = t.summary;
+  document.getElementById("qButtons").innerHTML = [
+    ["why","🔥 Why is this trending?"],
+    ["start","🕐 How did it start?"],
+    ["react","💬 How are people reacting?"],
+    ["who","🕸️ Who is influencing the conversation?"],
+    ["spread","📱 How is it spreading across platforms?"]
+  ].map(([k,l]) => `<button class="q-btn ${k===lastQuestion?"active":""}" onclick="ask('${k}')">${l}</button>`).join("");
+  ask(lastQuestion, false);
+
+  document.getElementById("sentLegend").innerHTML = Object.entries(t.sentiment).map(([k,v],i) => {
+    const c = ["#16a34a","#dc2626","#d97706","#6b7280"][i];
+    return `<span><i class="dot" style="background:${c}"></i>${k} ${v}%</span>`;
+  }).join("");
+  document.getElementById("emotions").innerHTML = t.emotions.map(([k,v]) =>
+    `<div class="bar-row"><span>${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v*2}%"></div></div><span>${v}%</span></div>`
+  ).join("");
+  document.getElementById("ageBars").innerHTML = t.age.map(([k,v]) =>
+    `<div class="bar-row"><span>${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v}%"></div></div><span>${v}%</span></div>`
+  ).join("");
+  document.getElementById("regionBars").innerHTML = t.regions.map(([k,v]) =>
+    `<div class="bar-row"><span>${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v*1.8}%"></div></div><span>${v}%</span></div>`
+  ).join("");
+  document.getElementById("impPosts").innerHTML = t.imp.map(p => `
+    <div class="imp-post">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+        <span class="plat ${p.plat==="X"?"x":p.plat==="Telegram"?"tg":"rd"}">${p.plat}</span>
+        <b>${p.user}</b>
+        <span class="tiny">${p.time}</span>
+      </div>
+      <div style="margin:4px 0 8px;">${p.user} posted “${p.text}” on ${p.plat}</div>
+      ${metricRow(p)}
+    </div>`).join("");
+  document.getElementById("communities").innerHTML =
+    `<div class="tags">` + t.communities.map(([k,v]) => `<div class="tag"><b>${k}</b>${v}%</div>`).join("") + `</div>`;
+  document.getElementById("influencers").innerHTML =
+    `<table><thead><tr><th>Account</th><th>Role</th><th>Impact</th></tr></thead><tbody>` +
+    t.influencers.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("") +
+    `</tbody></table>`;
+  document.getElementById("figures").innerHTML = t.figures.length
+    ? t.figures.map(f => `<div class="imp-post"><div>⭐ ${f[0]}</div><div class="tiny">${f[1]}</div><div style="margin-top:4px;">${f[2]}</div></div>`).join("")
+    : `<p class="muted">No major public-figure association in the current analyzed window.</p>`;
+  document.getElementById("aiAnalyst").innerHTML = `<p>${t.analyst}</p>`;
+  document.getElementById("netGraph").innerHTML = networkSvg(t);
+}
+
+function ask(key, updateBtns=true) {
+  lastQuestion = key;
+  const t = TRENDS[currentTopic];
+  const map = { why:t.answers.why, start:t.answers.start, react:t.answers.react, who:t.answers.who, spread:t.answers.spread };
+  document.getElementById("explainBox").textContent = map[key];
+  if (updateBtns) {
+    document.querySelectorAll("#qButtons .q-btn").forEach((b,i) => {
+      const keys = ["why","start","react","who","spread"];
+      b.classList.toggle("active", keys[i]===key);
+    });
+  }
+}
+
+function lineCfg(labels, g) {
+  const mk = (label, data, color) => ({
+    label, data, borderColor: color, backgroundColor: "transparent",
+    borderWidth: 2, pointRadius: 2, tension: .25
+  });
+  return {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        mk("Likes", g.likes, "#111827"),
+        mk("Views", g.views, "#2563eb"),
+        mk("Comments", g.comments, "#d97706"),
+        mk("Shares", g.shares, "#16a34a")
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#6b7280", font: { size: 11 } } },
+        y: { grid: { color: "#eef0f3" }, ticks: { color: "#6b7280", font: { size: 11 } } }
+      }
+    }
+  };
+}
+
+function drawTopicCharts(t) {
+  destroyChart("sent"); destroyChart("eng"); destroyChart("time"); destroyChart("plat");
+  charts.sent = new Chart(document.getElementById("sentChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(t.sentiment),
+      datasets: [{ data: Object.values(t.sentiment), backgroundColor: ["#16a34a","#dc2626","#d97706","#9ca3af"], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } }, cutout: "58%" }
+  });
+  charts.eng = new Chart(document.getElementById("engChart"), lineCfg(t.timeline.labels, t.timeline));
+  charts.time = new Chart(document.getElementById("timeChart"), {
+    type: "line",
+    data: {
+      labels: t.timeline.labels,
+      datasets: [{
+        label: "Activity", data: t.timeline.activity,
+        borderColor: "#111827", backgroundColor: "rgba(17,24,39,.06)",
+        fill: true, borderWidth: 2, pointRadius: 3, tension: .3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#6b7280", font: { size: 11 } } },
+        y: { grid: { color: "#eef0f3" }, ticks: { color: "#6b7280", font: { size: 11 } } }
+      }
+    }
+  });
+  charts.plat = new Chart(document.getElementById("platChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(t.platforms),
+      datasets: [{ data: Object.values(t.platforms), backgroundColor: ["#111827","#2563eb","#c2410c"], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "right", labels: { boxWidth: 12 } } }, cutout: "58%" }
+  });
+}
+
+function onSlider(v) {
+  const t = TRENDS[currentTopic];
+  const i = Number(v);
+  const sent = Object.entries(t.sentiment).map(([k,val]) => k + " " + val + "%").join(" · ");
+  document.getElementById("sliderInfo").innerHTML =
+    `<b>${t.timeline.labels[i]}</b> — activity index ${t.timeline.activity[i]}<br/>
+     Engagement in this window: ♥ ${t.timeline.likes[i]}k likes · ◉ ${t.timeline.views[i]}k views · 💬 ${t.timeline.comments[i]}k comments · ↗ ${t.timeline.shares[i]}k shares<br/>
+     Sentiment mix (topic-level): ${sent}<br/>${t.timeline.events[i]}`;
+}
+
+function networkSvg(t) {
+  const nodes = [
+    { id:"@gamingcentral", x:260, y:90, r:28 },
+    { id:"@gameupdates", x:430, y:70, r:22 },
+    { id:"@gaming_news", x:400, y:180, r:20 },
+    { id:"@dailygames", x:140, y:160, r:16 },
+    { id:"@aidaily", x:80, y:60, r:14 },
+    { id:"@campuswire", x:520, y:150, r:13 }
+  ];
+  const edges = [[0,1],[0,2],[0,3],[1,2],[3,0],[1,5],[4,3]];
+  const names = t.influencers.map(x => x[0]);
+  nodes.forEach((n,i) => { if (names[i]) n.id = names[i]; });
+  return `<svg viewBox="0 0 600 240" width="100%" height="240">
+    ${edges.map(([a,b]) => `<line x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}" stroke="#d1d5db" stroke-width="1.5"/>`).join("")}
+    ${nodes.map(n => `<g>
+      <circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="#111827" />
+      <text x="${n.x}" y="${n.y + n.r + 14}" text-anchor="middle" font-size="11" font-family="Inter, Arial" fill="#374151">${n.id}</text>
+    </g>`).join("")}
+  </svg>`;
+}
+
+function renderAnalyticsPage() {
+  document.getElementById("analyticsTrends").innerHTML = ORDER.map(id => {
+    const t = TRENDS[id];
+    return `<div class="rising-item" onclick="openTopic('${id}','analytics')">
+      <span class="rt-rank">#${t.rank}</span>
+      <div><div class="rt-name">${t.name}</div><div class="tiny">${t.posts} posts · ${t.interactions} interactions</div></div>
+      <span class="rt-delta">+${t.growth}%</span>
+    </div>`;
+  }).join("");
+  const g = TRENDS["gta-vi"].timeline;
+  destroyChart("gEng"); destroyChart("gSent");
+  charts.gEng = new Chart(document.getElementById("globalEngChart"), lineCfg(g.labels, g));
+  charts.gSent = new Chart(document.getElementById("globalSentChart"), {
+    type: "doughnut",
+    data: { labels: ["Positive","Negative","Mixed","Neutral"], datasets: [{ data:[44,21,17,18], backgroundColor:["#16a34a","#dc2626","#d97706","#9ca3af"], borderWidth:0 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"right", labels:{ boxWidth:12 } } }, cutout:"58%" }
+  });
+}
+
+function renderNetworkPage() {
+  const t = TRENDS["gta-vi"];
+  document.getElementById("netGraphPage").innerHTML = networkSvg(t);
+  document.getElementById("netInfluencers").innerHTML =
+    `<table><thead><tr><th>Account</th><th>Role</th><th>Impact</th></tr></thead><tbody>` +
+    t.influencers.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("") + `</tbody></table>`;
+  document.getElementById("netCommunities").innerHTML =
+    `<div class="tags">` + t.communities.map(([k,v]) => `<div class="tag"><b>${k}</b>${v}%</div>`).join("") + `</div>`;
+}
+
+function renderAudiencePage() {
+  const t = TRENDS["gta-vi"];
+  document.getElementById("audAge").innerHTML = `<div class="section-title">Age groups</div>` + t.age.map(([k,v]) =>
+    `<div class="bar-row"><span>${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v}%"></div></div><span>${v}%</span></div>`
+  ).join("");
+  document.getElementById("audRegion").innerHTML = `<div class="section-title">Region</div>` + t.regions.map(([k,v]) =>
+    `<div class="bar-row"><span>${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v*1.8}%"></div></div><span>${v}%</span></div>`
+  ).join("");
+}
+</script>
+</body>
+</html>
